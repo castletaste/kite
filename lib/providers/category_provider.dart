@@ -40,7 +40,7 @@ Future<CategoriesResponse> categories(Ref ref) async {
       },
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       final categories = CategoriesResponse.fromJson(json);
       // save to cache
