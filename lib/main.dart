@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kite/services/storage.dart';
 
-void main() => runApp(ProviderScope(child: MyApp()));
+void main() async {
+  await Storage.init();
+  runApp(ProviderScope(child: MyApp()));
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
