@@ -66,7 +66,7 @@ class NewsContentSliver extends ConsumerWidget {
                     child: Row(
                       children: [
                         Transform.scale(
-                          scale: 1.5,
+                          scale: 1.25,
                           child: CupertinoCheckbox(
                             value: isRead,
                             onChanged: null,
