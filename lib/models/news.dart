@@ -90,6 +90,11 @@ class Cluster {
     this.futureOutlook,
   });
 
+  String get id =>
+      quoteSourceUrl == null || quoteSourceUrl!.isEmpty
+          ? title
+          : quoteSourceUrl!;
+
   factory Cluster.fromJson(Map<String, dynamic> json) => Cluster(
     category: _parseStringValue(json['category']),
     emoji: _parseStringValue(json['emoji']),
@@ -190,13 +195,15 @@ class Cluster {
 }
 
 class Perspective {
-  final List<String>? sources;
+  final List<Domain>? sources;
   final String? text;
 
   const Perspective({this.sources, this.text});
 
   factory Perspective.fromJson(Map<String, dynamic> json) => Perspective(
-    sources: _parseStringList(json['sources']),
+    sources: (json['sources'] as List<dynamic>?)
+        ?.map((e) => Domain.fromJson(e as Map<String, dynamic>))
+        .toList(),
     text: _parseStringValue(json['text']),
   );
 
@@ -210,42 +217,52 @@ class Article {
   final String? date;
   final String? title;
   final String? domain;
-  final String? url;
+  final String? link;
   final String? image;
+  final String? imageCaption;
 
-  const Article({this.date, this.title, this.domain, this.url, this.image});
+  const Article({
+    this.date,
+    this.title,
+    this.domain,
+    this.link,
+    this.image,
+    this.imageCaption,
+  });
 
   factory Article.fromJson(Map<String, dynamic> json) => Article(
     date: _parseStringValue(json['date']),
     title: _parseStringValue(json['title']),
     domain: _parseStringValue(json['domain']),
-    url: _parseStringValue(json['url']),
+    link: _parseStringValue(json['link']),
     image: _parseStringValue(json['image']),
+    imageCaption: _parseStringValue(json['image_caption']),
   );
 
   Map<String, dynamic> toJson() => {
     if (date != null) 'date': date,
     if (title != null) 'title': title,
     if (domain != null) 'domain': domain,
-    if (url != null) 'url': url,
+    if (link != null) 'link': link,
     if (image != null) 'image': image,
+    if (imageCaption != null) 'image_caption': imageCaption,
   };
 }
 
 class Domain {
   final String? name;
-  final String? favicon;
+  final String? url;
 
-  const Domain({this.name, this.favicon});
+  const Domain({this.name, this.url});
 
   factory Domain.fromJson(Map<String, dynamic> json) => Domain(
     name: _parseStringValue(json['name']),
-    favicon: _parseStringValue(json['favicon']),
+    url: _parseStringValue(json['favicon']) ?? _parseStringValue(json['url']),
   );
 
   Map<String, dynamic> toJson() => {
     if (name != null) 'name': name,
-    if (favicon != null) 'favicon': favicon,
+    if (url != null) 'url': url,
   };
 }
 
@@ -274,7 +291,6 @@ List<String> _parseStringOrList(dynamic value) {
 String? _parseStringValue(dynamic value) {
   if (value == null) return null;
   if (value is String) return value;
-  if (value is List && value.isNotEmpty) return value.first.toString();
   return value.toString();
 }
 

@@ -15,6 +15,7 @@ class ReadClusters extends _$ReadClusters {
 
   /// Marks a cluster as read by its unique [id] and persists the change.
   Future<void> markRead(String id) async {
+    if (id.isEmpty) return;
     final current = state.value ?? <String>{};
     if (current.contains(id)) return;
     final updated = {...current, id};

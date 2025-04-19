@@ -1,0 +1,66 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:universal_image/universal_image.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:kite/models/news.dart';
+
+class RelatedArticleTile extends StatelessWidget {
+  final Article article;
+  final List<Domain>? domains;
+
+  const RelatedArticleTile({super.key, required this.article, this.domains});
+
+  @override
+  Widget build(BuildContext context) {
+    // final theme = CupertinoTheme.of(context);
+    // Look up favicon for this article domain
+    final favicon =
+        domains
+            ?.firstWhere(
+              (d) => d.name == article.domain,
+              orElse: () => Domain(),
+            )
+            .url;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: CupertinoListTile(
+        leading:
+            favicon != null
+                ? Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                  child: UniversalImage(favicon, width: 64, height: 64),
+                )
+                : const SizedBox.shrink(),
+        title: Text(article.title ?? 'No title'),
+        subtitle: article.domain != null ? Text(article.domain!) : null,
+        onTap: () async {
+          final url = article.link;
+          if (url == null || url.isEmpty) return;
+          final success = await launchUrl(
+            Uri.parse(url),
+            mode: LaunchMode.inAppWebView,
+          );
+          if (!success || !context.mounted) return;
+          showCupertinoDialog(
+            context: context,
+            builder:
+                (_) => CupertinoAlertDialog(
+                  title: const Text('Error'),
+                  content: Text('Could not launch $url'),
+                  actions: [
+                    CupertinoDialogAction(
+                      child: const Text('OK'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+          );
+        },
+      ),
+    );
+  }
+}

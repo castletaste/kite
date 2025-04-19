@@ -30,14 +30,20 @@ class NewsContentSliver extends ConsumerWidget {
               ),
             );
           }
+          // Sort clusters: unread first, then read using unique IDs
+          final clusters = news.clusters;
+
           return ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: news.clusters.length,
+            itemCount: clusters.length,
             itemBuilder: (context, index) {
-              final cluster = news.clusters[index];
-              final id = cluster.quoteSourceUrl ?? cluster.title;
-              final isRead = readIds.contains(id);
+              final cluster =
+                  (clusters
+                    ..sort((a, b) => readIds.contains(a.id) ? 1 : -1))[index];
+
+              final isRead = readIds.contains(cluster.id);
+
               return Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -49,7 +55,9 @@ class NewsContentSliver extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                   onPressed: () async {
                     await Future.wait([
-                      ref.read(readClustersProvider.notifier).markRead(id),
+                      ref
+                          .read(readClustersProvider.notifier)
+                          .markRead(cluster.id),
                       context.push('/article', extra: cluster),
                     ]);
                   },
@@ -58,7 +66,7 @@ class NewsContentSliver extends ConsumerWidget {
                     child: Row(
                       children: [
                         Transform.scale(
-                          scale: 1,
+                          scale: 1.5,
                           child: CupertinoCheckbox(
                             value: isRead,
                             onChanged: null,
