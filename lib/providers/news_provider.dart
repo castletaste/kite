@@ -20,8 +20,8 @@ Future<NewsResponse> categoryNews(Ref ref, String categoryFile) async {
 
   NewsResponse? cached;
   // Try to read cache first
-  final cachedJsonString = await Storage.getNewsJson(categoryFile);
-  final cachedLastModified = await Storage.getNewsLastModified(categoryFile);
+  final cachedJsonString = Storage.getNewsJson(categoryFile);
+  final cachedLastModified = Storage.getNewsLastModified(categoryFile);
 
   if (cachedJsonString != null) {
     try {

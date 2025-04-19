@@ -18,8 +18,8 @@ Future<CategoriesResponse> categories(Ref ref) async {
 
   // try to read cache first
 
-  final cachedJsonString = await Storage.getCategoriesJson();
-  final cachedLastModified = await Storage.getCategoriesLastModified();
+  final cachedJsonString = Storage.getCategoriesJson();
+  final cachedLastModified = Storage.getCategoriesLastModified();
   CategoriesResponse? cached;
   if (cachedJsonString != null) {
     try {

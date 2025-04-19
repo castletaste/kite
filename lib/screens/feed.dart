@@ -1,76 +1,139 @@
 import 'package:flutter/cupertino.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
-import 'package:kite/extensions/category_emoji.dart';
 import 'package:kite/models/category.dart';
-import 'package:kite/providers/category_provider.dart';
+import 'package:kite/providers/index.dart';
+import 'package:kite/services/storage.dart';
+import 'package:kite/widgets/category_selector.dart';
+import 'package:kite/widgets/news_content_sliver.dart';
 
-class FeedScreen extends ConsumerWidget {
+class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FeedScreen> createState() => _FeedScreenState();
+}
+
+class _FeedScreenState extends ConsumerState<FeedScreen> {
+  Category? selectedCategory;
+
+  CupertinoThemeData get theme => CupertinoTheme.of(context);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLastSelectedCategory();
+  }
+
+  Future<void> _loadLastSelectedCategory() async {
+    final lastCategoryFile = Storage.getLastSelectedCategory();
+
+    // The category will be properly set when data is loaded in didChangeDependencies
+    if (lastCategoryFile != null) {
+      // We just store the file name to find the category later
+      setState(() {
+        // This is just a temporary placeholder to indicate we have a stored preference
+        selectedCategory = Category(name: '', file: lastCategoryFile);
+      });
+    }
+  }
+
+  Future<void> _saveSelectedCategory(String categoryFile) async {
+    await Storage.setLastSelectedCategory(categoryFile);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Check if categories are loaded and we need to select one
     final categories = ref.watch(categoriesProvider);
+    categories.whenData((res) {
+      if (res.categories.isNotEmpty) {
+        if (selectedCategory == null) {
+          // No category selected yet, select the first one
+          _selectCategory(res.categories.first);
+        } else if (selectedCategory!.name.isEmpty) {
+          // We have a stored category file but haven't loaded the full category yet
+          final storedCategoryFile = selectedCategory!.file;
+          final matchingCategory = res.categories.firstWhere(
+            (category) => category.file == storedCategoryFile,
+            orElse: () => res.categories.first,
+          );
+          _selectCategory(matchingCategory);
+        }
+      }
+    });
+  }
+
+  void _selectCategory(Category category) {
+    setState(() {
+      selectedCategory = category;
+    });
+    _saveSelectedCategory(category.file);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Auto-select when loading the category list
+    ref.listen<AsyncValue<CategoriesResponse>>(categoriesProvider, (
+      prev,
+      next,
+    ) {
+      next.whenData((res) {
+        if (selectedCategory == null) {
+          _selectCategory(res.categories.first);
+        } else if (selectedCategory!.name.isEmpty) {
+          final file = selectedCategory!.file;
+          final match = res.categories.firstWhere(
+            (c) => c.file == file,
+            orElse: () => res.categories.first,
+          );
+          _selectCategory(match);
+        }
+      });
+    });
+
+    final categories = ref.watch(categoriesProvider);
+    final newsAsync =
+        selectedCategory != null
+            ? ref.watch(categoryNewsProvider(selectedCategory!.file))
+            : null;
 
     return CupertinoPageScaffold(
       child: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
         child: CustomScrollView(
           slivers: [
-            CupertinoSliverNavigationBar(largeTitle: Text('Kite')),
-            categorySelect(context, categories),
-            SliverToBoxAdapter(
-              child: Container(
-                height: 1000,
-                color: CupertinoColors.placeholderText,
+            CupertinoSliverNavigationBar(
+              largeTitle: Text('Kite'),
+              stretch: true,
+              backgroundColor: CupertinoColors.darkBackgroundGray,
+              alwaysShowMiddle: false,
+              middle: Text(
+                'Today, ${DateFormat('MMMM d').format(DateTime.now())}',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
             ),
+            CategorySelector(
+              categories: categories,
+              selectedCategory: selectedCategory,
+              onCategorySelected: _selectCategory,
+            ),
+            if (selectedCategory != null && newsAsync != null)
+              NewsContentSliver(newsAsync: newsAsync)
+            else
+              SliverToBoxAdapter(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: CupertinoActivityIndicator(),
+                  ),
+                ),
+              ),
           ],
         ),
-      ),
-    );
-  }
-
-  PinnedHeaderSliver categorySelect(
-    BuildContext context,
-    AsyncValue<CategoriesResponse> categories,
-  ) {
-    return PinnedHeaderSliver(
-      child: categories.maybeWhen(
-        data:
-            (res) => Container(
-              height: 40,
-              margin: const EdgeInsets.only(top: 8, bottom: 12),
-              child: ListView.builder(
-                itemCount: res.categories.length,
-                shrinkWrap: true,
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                itemBuilder: (BuildContext context, int index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: CupertinoColors.systemFill,
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${res.categories[index].emoji} ${res.categories[index].name}',
-                        style: CupertinoTheme.of(context).textTheme.textStyle,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-        error: (err, st) => Text(err.toString()),
-        orElse: () => CupertinoActivityIndicator(),
       ),
     );
   }
