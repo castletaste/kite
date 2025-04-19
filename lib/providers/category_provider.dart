@@ -5,18 +5,16 @@ import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:kite/models/category.dart';
+import 'package:kite/providers/http_client_provider.dart';
 import 'package:kite/services/storage.dart';
 
 part 'category_provider.g.dart';
 
 const _categoriesUrl = 'https://kite.kagi.com/kite.json';
 
-/// Provider that returns an HTTP client. Convenient to override in tests
-final httpClientProvider = Provider<http.Client>((ref) => http.Client());
-
 @riverpod
 Future<CategoriesResponse> categories(Ref ref) async {
-  final client = ref.read(httpClientProvider);
+  final client = ref.watch(httpClientProvider);
 
   // try to read cache first
 
@@ -59,7 +57,7 @@ Future<CategoriesResponse> categories(Ref ref) async {
 
     // Any other abnormal status
     throw http.ClientException(
-      'Failed to load categories (status: \\${response.statusCode})',
+      'Failed to load categories (status: \\${response.statusCode}, reason: \\${response.reasonPhrase})',
       Uri.parse(_categoriesUrl),
     );
   } on Exception catch (_) {

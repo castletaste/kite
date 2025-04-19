@@ -15,6 +15,7 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return CupertinoApp.router(
+      theme: CupertinoThemeData(brightness: Brightness.dark),
       title: 'Kite',
       routerConfig: ref.watch(routerProvider),
     );
