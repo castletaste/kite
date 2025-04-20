@@ -37,10 +37,11 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
   build_runner: ^2.4.15
   riverpod_generator: ^2.6.5
   mocktail: ^1.0.4
-  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.6
 
 flutter:
   uses-material-design: true
@@ -48,12 +49,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/kite_dark.svg
-
-flutter_launcher_icons:
-  android: true
-  ios: true
-  image_path: "assets/kite_dark.svg"
-  adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/kite_dark.svg"
-  remove_alpha_ios: true
-  background_color_ios: "#000000"
+flutter_native_splash:
+         color: "#FFFFFF"
+         image: assets/kite_dark.png
+         ios: true
+         android: true
