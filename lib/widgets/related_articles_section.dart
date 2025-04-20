@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:kite/widgets/extensions/first_where_or_null.dart';
 import 'package:universal_image/universal_image.dart';
 
 import 'package:kite/models/news.dart';
@@ -57,11 +58,8 @@ class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
           final isExpanded = expandedDomains.contains(domainName);
           final faviconUrl =
               widget.domains
-                  ?.firstWhere(
-                    (d) => d.name == domainName,
-                    orElse: () => Domain(),
-                  )
-                  .url;
+                  ?.firstWhereOrNull((d) => d.name == domainName)
+                  ?.url;
           return CupertinoListSection.insetGrouped(
             header: GestureDetector(
               onTap: () {

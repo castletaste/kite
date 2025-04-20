@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kite/widgets/extensions/first_where_or_null.dart';
 import 'package:universal_image/universal_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:kite/models/news.dart';
@@ -15,15 +16,8 @@ class RelatedArticleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final theme = CupertinoTheme.of(context);
-    // Look up favicon for this article domain
     final favicon =
-        domains
-            ?.firstWhere(
-              (d) => d.name == article.domain,
-              orElse: () => Domain(),
-            )
-            .url;
+        domains?.firstWhereOrNull((d) => d.name == article.domain)?.url;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
