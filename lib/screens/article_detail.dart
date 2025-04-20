@@ -177,7 +177,7 @@ class ArticleDetailScreen extends StatelessWidget {
                           child: QuoteCard(
                             quote: p.text ?? '',
                             author: author,
-                            sourceUrl: p.sources?.first.url,
+                            sourceUrl: p.sources?.firstOrNull?.url,
                           ),
                         );
                       },

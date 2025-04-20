@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import 'package:easy_image_viewer/easy_image_viewer.dart';
-import 'package:universal_image/universal_image.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ArticleImage extends StatefulWidget {
   final String imageUrl;
@@ -28,6 +28,12 @@ class ArticleImage extends StatefulWidget {
 
 class _ArticleImageState extends State<ArticleImage> {
   bool _isImagePrefetched = false;
+  ImageProvider? _imageProvider;
+  @override
+  void initState() {
+    super.initState();
+    _imageProvider = NetworkImage(widget.imageUrl);
+  }
 
   @override
   void didChangeDependencies() {
@@ -39,13 +45,13 @@ class _ArticleImageState extends State<ArticleImage> {
   }
 
   void _onTap(BuildContext context) async {
-    if (!widget.enableViewer) return;
+    if (!widget.enableViewer || _imageProvider == null) return;
     unawaited(HapticFeedback.selectionClick());
     await showImageViewer(
       context,
       doubleTapZoomable: true,
       swipeDismissible: true,
-      NetworkImage(widget.imageUrl),
+      _imageProvider!,
       useSafeArea: true,
     );
   }
@@ -56,17 +62,29 @@ class _ArticleImageState extends State<ArticleImage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          onTap: () => _onTap(context),
-          child: UniversalImage(
-            widget.imageUrl,
-            filterQuality: FilterQuality.medium,
-            cache: true,
-            width: double.infinity,
-            height: 240,
-            fit: BoxFit.cover,
+        if (_imageProvider != null)
+          GestureDetector(
+            onTap: () => _onTap(context),
+            child: Image(
+              image: _imageProvider!,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Shimmer.fromColors(
+                  baseColor: CupertinoColors.darkBackgroundGray,
+                  highlightColor: CupertinoColors.secondarySystemFill,
+                  child: Container(
+                    width: double.infinity,
+                    height: 240,
+                    color: CupertinoColors.darkBackgroundGray,
+                  ),
+                );
+              },
+              filterQuality: FilterQuality.high,
+              width: double.infinity,
+              height: 240,
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
         const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
