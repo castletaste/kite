@@ -122,10 +122,7 @@ class ArticleDetailScreen extends StatelessWidget {
             ],
             if (cluster.quote != null && cluster.quote!.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
                 child: QuoteCard(
                   quote: cluster.quote!,
                   sourceUrl: cluster.quoteSourceUrl,

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 
 import 'package:kite/models/category.dart';
@@ -111,7 +112,17 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
         child: CustomScrollView(
           slivers: [
             CupertinoSliverNavigationBar(
-              largeTitle: Text('Kite'),
+              largeTitle: Row(
+                children: [
+                  SvgPicture.asset(
+                    'assets/kite_dark.svg',
+                    width: 32,
+                    height: 32,
+                  ),
+                  const SizedBox(width: 8),
+                  Text('Kite'),
+                ],
+              ),
               stretch: true,
               backgroundColor: CupertinoColors.darkBackgroundGray,
               alwaysShowMiddle: false,
