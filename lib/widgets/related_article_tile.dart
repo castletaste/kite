@@ -44,25 +44,7 @@ class RelatedArticleTile extends StatelessWidget {
           unawaited(HapticFeedback.selectionClick());
           final url = article.link;
           if (url == null || url.isEmpty) return;
-          final success = await launchUrl(
-            Uri.parse(url),
-            mode: LaunchMode.inAppWebView,
-          );
-          if (!success || !context.mounted) return;
-          showCupertinoDialog(
-            context: context,
-            builder:
-                (_) => CupertinoAlertDialog(
-                  title: const Text('Error'),
-                  content: Text('Could not launch $url'),
-                  actions: [
-                    CupertinoDialogAction(
-                      child: const Text('OK'),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
-          );
+          await launchUrl(Uri.parse(url), mode: LaunchMode.inAppWebView);
         },
       ),
     );
