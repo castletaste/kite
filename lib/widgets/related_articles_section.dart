@@ -19,12 +19,17 @@ class RelatedArticlesSection extends StatefulWidget {
   State<RelatedArticlesSection> createState() => _RelatedArticlesSectionState();
 }
 
-class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
+class _RelatedArticlesSectionState extends State<RelatedArticlesSection>
+    with AutomaticKeepAliveClientMixin {
   bool showAllSources = false;
   final Set<String> expandedDomains = {};
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     final theme = CupertinoTheme.of(context);
     // Group articles by domain
     final Map<String, List<Article>> grouped = {};
@@ -60,6 +65,7 @@ class _RelatedArticlesSectionState extends State<RelatedArticlesSection> {
               widget.domains
                   ?.firstWhereOrNull((d) => d.name == domainName)
                   ?.url;
+                  
           return CupertinoListSection.insetGrouped(
             header: GestureDetector(
               onTap: () {

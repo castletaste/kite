@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:universal_image/universal_image.dart';
 
-class ArticleImage extends StatelessWidget {
+class ArticleImage extends StatefulWidget {
   final String imageUrl;
   final String caption;
   final String fallbackCaption;
@@ -22,14 +22,30 @@ class ArticleImage extends StatelessWidget {
     this.enableViewer = false,
   });
 
-  void _onTap(context) async {
-    if (!enableViewer) return;
+  @override
+  State<ArticleImage> createState() => _ArticleImageState();
+}
+
+class _ArticleImageState extends State<ArticleImage> {
+  bool _isImagePrefetched = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isImagePrefetched) {
+      precacheImage(NetworkImage(widget.imageUrl), context);
+      _isImagePrefetched = true;
+    }
+  }
+
+  void _onTap(BuildContext context) async {
+    if (!widget.enableViewer) return;
     unawaited(HapticFeedback.selectionClick());
     await showImageViewer(
       context,
       doubleTapZoomable: true,
       swipeDismissible: true,
-      NetworkImage(imageUrl),
+      NetworkImage(widget.imageUrl),
       useSafeArea: true,
     );
   }
@@ -43,7 +59,9 @@ class ArticleImage extends StatelessWidget {
         GestureDetector(
           onTap: () => _onTap(context),
           child: UniversalImage(
-            imageUrl,
+            widget.imageUrl,
+            filterQuality: FilterQuality.medium,
+            cache: true,
             width: double.infinity,
             height: 240,
             fit: BoxFit.cover,
@@ -53,7 +71,7 @@ class ArticleImage extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            caption.isNotEmpty ? caption : fallbackCaption,
+            widget.caption.isNotEmpty ? widget.caption : widget.fallbackCaption,
             style: theme.textTheme.textStyle.copyWith(
               fontSize: 12,
               color: CupertinoColors.inactiveGray,

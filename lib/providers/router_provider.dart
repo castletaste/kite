@@ -28,23 +28,9 @@ GoRouter router(Ref ref) {
               'Unexpected type for state.extra: ${state.extra.runtimeType}',
             );
           }
-          return CustomTransitionPage(
+          return CupertinoPage(
             key: state.pageKey,
-            fullscreenDialog: false,
             child: ArticleDetailScreen(cluster: cluster),
-            transitionsBuilder: (
-              context,
-              animation,
-              secondaryAnimation,
-              child,
-            ) {
-              return CupertinoPageTransition(
-                primaryRouteAnimation: animation,
-                secondaryRouteAnimation: secondaryAnimation,
-                linearTransition: false,
-                child: child,
-              );
-            },
           );
         },
       ),

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kite/widgets/extensions/first_where_or_null.dart';
 import 'package:universal_image/universal_image.dart';
@@ -25,11 +24,14 @@ class RelatedArticleTile extends StatelessWidget {
         leading:
             favicon != null
                 ? Container(
-                  decoration: BoxDecoration(
+                  width: 64,
+                  height: 64,
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white,
+                    color: CupertinoColors.white,
                   ),
-                  child: UniversalImage(favicon, width: 64, height: 64),
+                  clipBehavior: Clip.antiAlias,
+                  child: UniversalImage(favicon, fit: BoxFit.cover),
                 )
                 : const SizedBox.shrink(),
         title: Text(article.title ?? 'No title'),

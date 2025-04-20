@@ -53,7 +53,10 @@ class NewsContentSliver extends ConsumerWidget {
                 ),
                 child: CupertinoButton(
                   padding: EdgeInsets.zero,
-                  color: CupertinoColors.systemGrey6,
+                  color:
+                      isRead
+                          ? CupertinoColors.secondarySystemFill
+                          : CupertinoColors.systemGrey6,
                   borderRadius: BorderRadius.circular(12),
                   alignment: Alignment.bottomCenter,
                   onPressed: () async {
