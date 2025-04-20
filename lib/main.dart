@@ -17,7 +17,14 @@ class MyApp extends ConsumerWidget {
     return CupertinoApp.router(
       theme: CupertinoThemeData(brightness: Brightness.dark),
       title: 'Kite',
+      debugShowCheckedModeBanner: false,
       routerConfig: ref.watch(routerProvider),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [Locale('en', 'US')],
     );
   }
 }

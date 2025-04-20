@@ -1,14 +1,15 @@
-import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:universal_image/universal_image.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:kite/models/news.dart';
+import 'package:kite/widgets/article_image.dart';
 import 'package:kite/widgets/quote_card.dart';
 import 'package:kite/widgets/related_articles_section.dart';
 
@@ -25,21 +26,35 @@ class ArticleDetailScreen extends StatelessWidget {
             ? cluster.title
             : '${cluster.emoji} ${cluster.title}';
 
+    final imageArticles =
+        cluster.articles!
+            .where((a) => a.image != null && a.image!.isNotEmpty)
+            .toList();
+
+    final imageArticle = imageArticles.firstOrNull;
+
+    final additionalImageArticle = imageArticles.skip(1).firstOrNull;
+
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        trailing: Padding(
-          padding: const EdgeInsetsDirectional.only(
-            start: 42,
-            top: 4,
-            bottom: 6,
-            end: 8,
-          ),
-          child: AutoSizeText(
-            title,
-            textAlign: TextAlign.start,
-            style: theme.textTheme.navTitleTextStyle.copyWith(fontSize: 14),
-            maxLines: 2,
-            minFontSize: 10,
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            unawaited(HapticFeedback.mediumImpact());
+            context.pop();
+          },
+          child: const Icon(CupertinoIcons.chevron_back, size: 24),
+        ),
+        middle: Padding(
+          padding: const EdgeInsetsDirectional.only(bottom: 6, end: 8),
+          child: Center(
+            child: AutoSizeText(
+              title,
+              textAlign: TextAlign.start,
+              style: theme.textTheme.navTitleTextStyle.copyWith(fontSize: 14),
+              maxLines: 2,
+              minFontSize: 10,
+            ),
           ),
         ),
       ),
@@ -57,7 +72,7 @@ class ArticleDetailScreen extends StatelessWidget {
                 ),
               ),
             ],
-            if (cluster.location != null) ...[
+            if (cluster.location != null && cluster.location!.isNotEmpty) ...[
               const SizedBox(height: 16),
               GestureDetector(
                 onTap: () async {
@@ -95,41 +110,17 @@ class ArticleDetailScreen extends StatelessWidget {
             ],
             // Display first article image with caption or fallback
             if (cluster.articles != null &&
-                cluster.articles!.any(
-                  (a) => a.image != null && a.image!.isNotEmpty,
-                ))
-              Column(
-                children: [
-                  const SizedBox(height: 24),
-                  UniversalImage(
-                    cluster.articles!
-                        .firstWhere(
-                          (a) => a.image != null && a.image!.isNotEmpty,
-                        )
-                        .image!,
-                    width: double.infinity,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      cluster.articles!
-                              .firstWhere(
-                                (a) => a.image != null && a.image!.isNotEmpty,
-                              )
-                              .imageCaption ??
-                          'Story image',
-                      style: theme.textTheme.textStyle.copyWith(
-                        fontSize: 14,
-                        color: CupertinoColors.inactiveGray,
-                      ),
-                    ),
-                  ),
-                ],
+                imageArticle != null &&
+                imageArticle.image != null) ...[
+              const SizedBox(height: 16),
+              ArticleImage(
+                imageUrl: imageArticle.image!,
+                caption: imageArticle.imageCaption ?? '',
+                fallbackCaption: 'Story image',
+                enableViewer: true,
               ),
-            if (cluster.quote != null)
+            ],
+            if (cluster.quote != null && cluster.quote!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -145,34 +136,14 @@ class ArticleDetailScreen extends StatelessWidget {
 
             // Display second article image with caption or fallback
             if (cluster.articles != null &&
-                cluster.articles!
-                        .where((a) => a.image != null && a.image!.isNotEmpty)
-                        .length >
-                    1) ...[
-              const SizedBox(height: 12),
-              UniversalImage(
-                cluster.articles!
-                    .where((a) => a.image != null && a.image!.isNotEmpty)
-                    .toList()[1]
-                    .image!,
-                width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  cluster.articles!
-                          .where((a) => a.image != null && a.image!.isNotEmpty)
-                          .toList()[1]
-                          .imageCaption ??
-                      'Additional story image',
-                  style: theme.textTheme.textStyle.copyWith(
-                    fontSize: 14,
-                    color: CupertinoColors.inactiveGray,
-                  ),
-                ),
+                additionalImageArticle != null &&
+                additionalImageArticle.image != null) ...[
+              const SizedBox(height: 16),
+              ArticleImage(
+                imageUrl: additionalImageArticle.image!,
+                caption: additionalImageArticle.imageCaption ?? '',
+                fallbackCaption: 'Additional story image',
+                enableViewer: true,
               ),
             ],
             if (cluster.perspectives != null &&
@@ -217,7 +188,8 @@ class ArticleDetailScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            if (cluster.historicalBackground != null)
+            if (cluster.historicalBackground != null &&
+                cluster.historicalBackground!.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -243,7 +215,9 @@ class ArticleDetailScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            if (cluster.internationalReactions != null) ...[
+            if (cluster.internationalReactions != null &&
+                cluster.internationalReactions!.isNotEmpty &&
+                cluster.internationalReactions!.any((r) => r.isNotEmpty)) ...[
               const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),

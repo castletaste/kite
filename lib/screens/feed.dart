@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -71,6 +74,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     setState(() {
       selectedCategory = category;
     });
+    unawaited(HapticFeedback.selectionClick());
     _saveSelectedCategory(category.file);
   }
 

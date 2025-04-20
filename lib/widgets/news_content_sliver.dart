@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:kite/models/news.dart';
 import 'package:kite/providers/read_clusters_provider.dart';
-import 'package:go_router/go_router.dart';
 
 class NewsContentSliver extends ConsumerWidget {
   final AsyncValue<NewsResponse>? newsAsync;
@@ -32,41 +37,40 @@ class NewsContentSliver extends ConsumerWidget {
           }
           // Sort clusters: unread first, then read using unique IDs
           final clusters = news.clusters;
+          final sortedClusters =
+              clusters..sort((a, b) => readIds.contains(a.id) ? 1 : -1);
 
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: clusters.length,
-            itemBuilder: (context, index) {
-              final cluster =
-                  (clusters
-                    ..sort((a, b) => readIds.contains(a.id) ? 1 : -1))[index];
+          return Column(
+            children: List.generate(sortedClusters.length, (index) {
+              final cluster = sortedClusters[index];
 
               final isRead = readIds.contains(cluster.id);
 
               return Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+                  horizontal: 16,
+                  vertical: 4,
                 ),
                 child: CupertinoButton(
                   padding: EdgeInsets.zero,
                   color: CupertinoColors.systemGrey6,
                   borderRadius: BorderRadius.circular(12),
+                  alignment: Alignment.bottomCenter,
                   onPressed: () async {
-                    await Future.wait([
-                      ref
-                          .read(readClustersProvider.notifier)
-                          .markRead(cluster.id),
-                      context.push('/article', extra: cluster),
-                    ]);
+                    unawaited(HapticFeedback.mediumImpact());
+                    await context.push('/article', extra: cluster);
+                    await ref
+                        .read(readClustersProvider.notifier)
+                        .markRead(cluster.id);
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Transform.scale(
-                          scale: 1.25,
+                          scale: 1.2,
                           child: CupertinoCheckbox(
                             value: isRead,
                             onChanged: null,
@@ -89,14 +93,19 @@ class NewsContentSliver extends ConsumerWidget {
                   ),
                 ),
               );
-            },
+            }),
           );
         },
         error: (error, _) {
-          print('News error: $error');
+          debugPrint('News error: $error');
           return Center(child: Text('Error loading news: $error'));
         },
-        loading: () => const Center(child: CupertinoActivityIndicator()),
+        loading:
+            () => SizedBox(
+              width: double.infinity,
+              height: MediaQuery.sizeOf(context).height,
+              child: Center(child: CupertinoActivityIndicator()),
+            ),
       ),
     );
   }

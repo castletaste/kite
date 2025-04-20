@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,6 +27,7 @@ class QuoteCard extends StatelessWidget {
     return GestureDetector(
       onTap: () async {
         if (sourceUrl != null) {
+          unawaited(HapticFeedback.selectionClick());
           final success = await launchUrl(Uri.parse(sourceUrl!));
           if (!success || !context.mounted) return;
         }

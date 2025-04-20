@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:universal_image/universal_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:kite/models/news.dart';
@@ -38,6 +41,7 @@ class RelatedArticleTile extends StatelessWidget {
         title: Text(article.title ?? 'No title'),
         subtitle: article.domain != null ? Text(article.domain!) : null,
         onTap: () async {
+          unawaited(HapticFeedback.selectionClick());
           final url = article.link;
           if (url == null || url.isEmpty) return;
           final success = await launchUrl(

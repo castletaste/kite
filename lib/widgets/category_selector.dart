@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kite/models/category.dart';
+
 import 'package:kite/extensions/category_emoji.dart';
+import 'package:kite/models/category.dart';
 
 class CategorySelector extends StatelessWidget {
   final AsyncValue<CategoriesResponse> categories;
@@ -60,7 +62,7 @@ class CategorySelector extends StatelessWidget {
                 },
               ),
             ),
-        error: (error, _) => Center(child: Text('Error: $error')),
+        error: (error, _) => const SizedBox.shrink(),
         orElse: () => const SizedBox.shrink(),
       ),
     );

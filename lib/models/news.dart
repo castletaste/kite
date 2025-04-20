@@ -293,10 +293,3 @@ String? _parseStringValue(dynamic value) {
   if (value is String) return value;
   return value.toString();
 }
-
-List<String>? _parseStringList(dynamic value) {
-  if (value == null) return null;
-  if (value is List) return value.map((e) => e.toString()).toList();
-  if (value is String) return [value];
-  return [value.toString()];
-}
