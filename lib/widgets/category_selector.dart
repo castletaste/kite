@@ -47,7 +47,7 @@ class CategorySelector extends StatelessWidget {
                         decoration: BoxDecoration(
                           color:
                               isSelected
-                                  ? CupertinoColors.activeBlue.withOpacity(0.7)
+                                  ? CupertinoColors.activeBlue
                                   : CupertinoColors.darkBackgroundGray,
                           borderRadius: BorderRadius.circular(8.0),
                         ),

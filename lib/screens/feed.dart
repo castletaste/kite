@@ -137,7 +137,10 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               onCategorySelected: _selectCategory,
             ),
             if (selectedCategory != null && newsAsync != null)
-              NewsContentSliver(newsAsync: newsAsync)
+              NewsContentSliver(
+                selectedCategory: selectedCategory,
+                newsAsync: newsAsync,
+              )
             else
               SliverToBoxAdapter(
                 child: Center(

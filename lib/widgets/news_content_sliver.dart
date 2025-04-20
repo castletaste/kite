@@ -6,13 +6,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:kite/models/category.dart';
 import 'package:kite/models/news.dart';
 import 'package:kite/providers/read_clusters_provider.dart';
+import 'package:kite/screens/on_this_day.dart';
 
 class NewsContentSliver extends ConsumerWidget {
   final AsyncValue<NewsResponse>? newsAsync;
+  final Category? selectedCategory;
 
-  const NewsContentSliver({super.key, this.newsAsync});
+  const NewsContentSliver({super.key, this.newsAsync, this.selectedCategory});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,11 +63,14 @@ class NewsContentSliver extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                   alignment: Alignment.bottomCenter,
                   onPressed: () async {
-                    unawaited(HapticFeedback.mediumImpact());
-                    await context.push('/article', extra: cluster);
-                    await ref
-                        .read(readClustersProvider.notifier)
-                        .markRead(cluster.id);
+                    unawaited(HapticFeedback.lightImpact());
+                    context.push('/article', extra: cluster);
+                    await Future.delayed(
+                      const Duration(milliseconds: 400),
+                      () => ref
+                          .read(readClustersProvider.notifier)
+                          .markRead(cluster.id),
+                    );
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -100,6 +106,13 @@ class NewsContentSliver extends ConsumerWidget {
           );
         },
         error: (error, _) {
+          if (selectedCategory?.file == 'onthisday.json') {
+            return SizedBox(
+              width: double.infinity,
+              height: MediaQuery.sizeOf(context).height * 0.8,
+              child: const OnThisDay(),
+            );
+          }
           debugPrint('News error: $error');
           return Center(child: Text('Error loading news: $error'));
         },

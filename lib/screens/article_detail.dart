@@ -230,6 +230,7 @@ class ArticleDetailScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 8,
                   children:
                       cluster.internationalReactions!
