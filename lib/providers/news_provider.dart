@@ -3,20 +3,19 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart' show debugPrint;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:kite/models/news.dart';
+import 'package:kite/providers/api_client_provider.dart';
 import 'package:kite/providers/category_provider.dart';
-import 'package:kite/providers/http_client_provider.dart';
-import 'package:kite/services/storage.dart';
 import 'package:kite/services/api_urls.dart';
+import 'package:kite/services/storage.dart';
 
 part 'news_provider.g.dart';
 
 @riverpod
 Future<NewsResponse> categoryNews(Ref ref, String categoryFile) async {
-  final client = ref.watch(httpClientProvider);
+  final api = ref.watch(apiClientProvider);
   final newsUrl = newsEndpoint(categoryFile);
 
   NewsResponse? cached;
@@ -35,23 +34,18 @@ Future<NewsResponse> categoryNews(Ref ref, String categoryFile) async {
   }
 
   try {
-    final response = await client.get(
-      Uri.parse(newsUrl),
-      headers: {
-        if (cachedLastModified != null) 'If-Modified-Since': cachedLastModified,
-      },
+    final response = await api.getJson(
+      newsUrl,
+      ifModifiedSince: cachedLastModified,
     );
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      final bodyString = utf8.decode(response.bodyBytes);
-      final jsonMap = jsonDecode(bodyString) as Map<String, dynamic>;
-      final news = NewsResponse.fromJson(jsonMap);
+      final news = NewsResponse.fromJson(response.data);
 
       // Save to cache
-      await Storage.setNewsJson(categoryFile, bodyString);
-      final lastModifiedHeader = response.headers['last-modified'];
-      if (lastModifiedHeader != null) {
-        await Storage.setNewsLastModified(categoryFile, lastModifiedHeader);
+      await Storage.setNewsJson(categoryFile, response.rawBody);
+      if (response.lastModified != null) {
+        await Storage.setNewsLastModified(categoryFile, response.lastModified!);
       }
 
       return news;
@@ -64,10 +58,7 @@ Future<NewsResponse> categoryNews(Ref ref, String categoryFile) async {
     }
 
     // Any other abnormal status
-    throw http.ClientException(
-      'Failed to load news (status: ${response.statusCode}, reason: ${response.reasonPhrase})',
-      Uri.parse(newsUrl),
-    );
+    throw Exception('Failed to load news (status: ${response.statusCode})');
   } on Exception catch (e) {
     debugPrint('error: $e');
     // If there is a network error, try to return the cache, if it exists

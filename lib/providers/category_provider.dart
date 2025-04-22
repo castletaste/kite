@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:kite/models/category.dart';
-import 'package:kite/providers/http_client_provider.dart';
+import 'package:kite/providers/api_client_provider.dart';
 import 'package:kite/services/storage.dart';
 import 'package:kite/services/api_urls.dart';
 
@@ -13,7 +13,7 @@ part 'category_provider.g.dart';
 
 @riverpod
 Future<CategoriesResponse> categories(Ref ref) async {
-  final client = ref.watch(httpClientProvider);
+  final api = ref.watch(apiClientProvider);
 
   // try to read cache first
 
@@ -30,21 +30,17 @@ Future<CategoriesResponse> categories(Ref ref) async {
   }
 
   try {
-    final response = await client.get(
-      Uri.parse(categoriesUrl),
-      headers: {
-        if (cachedLastModified != null) 'If-Modified-Since': cachedLastModified,
-      },
+    final response = await api.getJson(
+      categoriesUrl,
+      ifModifiedSince: cachedLastModified,
     );
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      final json = jsonDecode(response.body) as Map<String, dynamic>;
-      final categories = CategoriesResponse.fromJson(json);
+      final categories = CategoriesResponse.fromJson(response.data);
       // save to cache
-      await Storage.setCategoriesJson(response.body);
-      final lastModifiedHeader = response.headers['last-modified'];
-      if (lastModifiedHeader != null) {
-        await Storage.setCategoriesLastModified(lastModifiedHeader);
+      await Storage.setCategoriesJson(response.rawBody);
+      if (response.lastModified != null) {
+        await Storage.setCategoriesLastModified(response.lastModified!);
       }
       return categories;
     }
@@ -56,7 +52,7 @@ Future<CategoriesResponse> categories(Ref ref) async {
 
     // Any other abnormal status
     throw http.ClientException(
-      'Failed to load categories (status: ${response.statusCode}, reason: ${response.reasonPhrase})',
+      'Failed to load categories (status: ${response.statusCode})',
       Uri.parse(categoriesUrl),
     );
   } on Exception catch (_) {

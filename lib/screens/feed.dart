@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -111,6 +112,16 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
         behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
         child: CustomScrollView(
           slivers: [
+            // Pull-to-refresh
+            CupertinoSliverRefreshControl(
+              onRefresh: () async {
+                // Refresh categories and selected news
+                ref.invalidate(categoriesProvider);
+                if (selectedCategory != null) {
+                  ref.invalidate(categoryNewsProvider(selectedCategory!.file));
+                }
+              },
+            ),
             CupertinoSliverNavigationBar(
               largeTitle: Row(
                 children: [
@@ -131,10 +142,34 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
             ),
-            CategorySelector(
-              categories: categories,
-              selectedCategory: selectedCategory,
-              onCategorySelected: _selectCategory,
+            // Category selector or error/loading state
+            categories.when(
+              data:
+                  (res) => CategorySelector(
+                    categories: categories,
+                    selectedCategory: selectedCategory,
+                    onCategorySelected: _selectCategory,
+                  ),
+              loading:
+                  () => const SliverToBoxAdapter(
+                    child: Center(child: CupertinoActivityIndicator()),
+                  ),
+              error:
+                  (error, _) => SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Error loading categories'),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () => ref.refresh(categoriesProvider),
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
             ),
             if (selectedCategory != null && newsAsync != null)
               NewsContentSliver(

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:kite/models/category.dart';
 import 'package:kite/models/news.dart';
+import 'package:kite/providers/news_provider.dart';
 import 'package:kite/providers/read_clusters_provider.dart';
 import 'package:kite/screens/on_this_day.dart';
 
@@ -97,8 +98,28 @@ class NewsContentSliver extends ConsumerWidget {
           return const SliverFillRemaining(child: OnThisDay());
         }
         debugPrint('News error: $error');
-        return const SliverToBoxAdapter(
-          child: Center(child: Text('Error loading news')),
+        return SliverFillRemaining(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Error loading news'),
+                const SizedBox(height: 8),
+                CupertinoButton(
+                  onPressed: () {
+                    if (selectedCategory != null) {
+                      // Retry loading news for the same category
+                      // ignore: invalid_use_of_visible_for_testing_member
+                      ref.invalidate(
+                        categoryNewsProvider(selectedCategory!.file),
+                      );
+                    }
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
         );
       },
       loading:
