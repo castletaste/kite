@@ -9,7 +9,6 @@ A Kite Flutter news reader application powered by Riverpod and Cupertino widgets
 
 ## Getting Started
 
-   ```
 1. Install dependencies:
    ```bash
    flutter pub get
