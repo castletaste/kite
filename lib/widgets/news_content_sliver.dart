@@ -26,103 +26,85 @@ class NewsContentSliver extends ConsumerWidget {
         .watch(readClustersProvider)
         .maybeWhen(data: (ids) => ids, orElse: () => <String>{});
 
-    return SliverToBoxAdapter(
-      child: newsAsync!.when(
-        data: (newsResponse) {
-          final news = newsResponse.news;
-          if (news.clusters.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Text('No news for this category'),
-              ),
-            );
-          }
-          // Sort clusters: unread first, then read using unique IDs
-          final clusters = news.clusters;
-          final sortedClusters =
-              clusters..sort((a, b) => readIds.contains(a.id) ? 1 : -1);
-
-          return Column(
-            children: List.generate(sortedClusters.length, (index) {
-              final cluster = sortedClusters[index];
-
-              final isRead = readIds.contains(cluster.id);
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                child: CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  color:
-                      isRead
-                          ? CupertinoColors.secondarySystemFill
-                          : CupertinoColors.systemGrey6,
-                  borderRadius: BorderRadius.circular(12),
-                  alignment: Alignment.bottomCenter,
-                  onPressed: () async {
-                    unawaited(HapticFeedback.lightImpact());
-                    context.push('/article', extra: cluster);
-                    await Future.delayed(
-                      const Duration(milliseconds: 400),
-                      () => ref
-                          .read(readClustersProvider.notifier)
-                          .markRead(cluster.id),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Transform.scale(
-                          scale: 1.2,
-                          child: CupertinoCheckbox(
-                            value: isRead,
-                            onChanged: null,
-                          ),
+    return newsAsync!.when(
+      data: (newsResponse) {
+        final clusters = newsResponse.news.clusters;
+        if (clusters.isEmpty) {
+          return const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Center(child: Text('No news for this category')),
+            ),
+          );
+        }
+        final sorted =
+            clusters..sort((a, b) => readIds.contains(a.id) ? 1 : -1);
+        return SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final cluster = sorted[index];
+            final isRead = readIds.contains(cluster.id);
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: CupertinoButton(
+                padding: EdgeInsets.zero,
+                color:
+                    isRead
+                        ? CupertinoColors.secondarySystemFill
+                        : CupertinoColors.systemGrey6,
+                borderRadius: BorderRadius.circular(12),
+                onPressed: () async {
+                  unawaited(HapticFeedback.lightImpact());
+                  context.push('/article', extra: cluster);
+                  await Future.delayed(
+                    const Duration(milliseconds: 400),
+                    () => ref
+                        .read(readClustersProvider.notifier)
+                        .markRead(cluster.id),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Transform.scale(
+                        scale: 1.2,
+                        child: CupertinoCheckbox(
+                          value: isRead,
+                          onChanged: null,
                         ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            cluster.emoji == null
-                                ? cluster.title
-                                : '${cluster.emoji}${cluster.title}',
-                            style: CupertinoTheme.of(context)
-                                .textTheme
-                                .navTitleTextStyle
-                                .copyWith(fontSize: 15),
-                          ),
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          cluster.emoji == null
+                              ? cluster.title
+                              : '${cluster.emoji}${cluster.title}',
+                          style: CupertinoTheme.of(
+                            context,
+                          ).textTheme.navTitleTextStyle.copyWith(fontSize: 15),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            }),
-          );
-        },
-        error: (error, _) {
-          if (selectedCategory?.file == 'onthisday.json') {
-            return SizedBox(
-              width: double.infinity,
-              height: MediaQuery.sizeOf(context).height * 0.8,
-              child: const OnThisDay(),
+              ),
             );
-          }
-          debugPrint('News error: $error');
-          return Center(child: Text('Error loading news: $error'));
-        },
-        loading:
-            () => SizedBox(
-              width: double.infinity,
-              height: MediaQuery.sizeOf(context).height,
-              child: Center(child: CupertinoActivityIndicator()),
-            ),
-      ),
+          }, childCount: sorted.length),
+        );
+      },
+      error: (error, _) {
+        if (selectedCategory?.file == 'onthisday.json') {
+          return const SliverFillRemaining(child: OnThisDay());
+        }
+        debugPrint('News error: $error');
+        return const SliverToBoxAdapter(
+          child: Center(child: Text('Error loading news')),
+        );
+      },
+      loading:
+          () => const SliverFillRemaining(
+            child: Center(child: CupertinoActivityIndicator()),
+          ),
     );
   }
 }
