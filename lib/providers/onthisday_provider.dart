@@ -6,11 +6,12 @@ import 'package:http/http.dart' as http;
 
 import 'package:kite/models/onthisday.dart';
 import 'package:kite/providers/http_client_provider.dart';
+import 'package:kite/services/api_urls.dart';
 
 // Manual FutureProvider for OnThisDay events, avoiding code generation
 final onThisDayProvider = FutureProvider<OnThisDayResponse>((ref) async {
   final client = ref.watch(httpClientProvider);
-  const url = 'https://kite.kagi.com/onthisday.json';
+  const url = onThisDayUrl;
   try {
     final response = await client.get(Uri.parse(url));
     if (response.statusCode >= 200 && response.statusCode < 300) {

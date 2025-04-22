@@ -7,10 +7,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:kite/models/category.dart';
 import 'package:kite/providers/http_client_provider.dart';
 import 'package:kite/services/storage.dart';
+import 'package:kite/services/api_urls.dart';
 
 part 'category_provider.g.dart';
-
-const _categoriesUrl = 'https://kite.kagi.com/kite.json';
 
 @riverpod
 Future<CategoriesResponse> categories(Ref ref) async {
@@ -32,7 +31,7 @@ Future<CategoriesResponse> categories(Ref ref) async {
 
   try {
     final response = await client.get(
-      Uri.parse(_categoriesUrl),
+      Uri.parse(categoriesUrl),
       headers: {
         if (cachedLastModified != null) 'If-Modified-Since': cachedLastModified,
       },
@@ -57,8 +56,8 @@ Future<CategoriesResponse> categories(Ref ref) async {
 
     // Any other abnormal status
     throw http.ClientException(
-      'Failed to load categories (status: \\${response.statusCode}, reason: \\${response.reasonPhrase})',
-      Uri.parse(_categoriesUrl),
+      'Failed to load categories (status: ${response.statusCode}, reason: ${response.reasonPhrase})',
+      Uri.parse(categoriesUrl),
     );
   } on Exception catch (_) {
     // If there is a network error, try to return the cache, if it exists

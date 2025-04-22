@@ -10,13 +10,14 @@ import 'package:kite/models/news.dart';
 import 'package:kite/providers/category_provider.dart';
 import 'package:kite/providers/http_client_provider.dart';
 import 'package:kite/services/storage.dart';
+import 'package:kite/services/api_urls.dart';
 
 part 'news_provider.g.dart';
 
 @riverpod
 Future<NewsResponse> categoryNews(Ref ref, String categoryFile) async {
   final client = ref.watch(httpClientProvider);
-  final newsUrl = 'https://kite.kagi.com/$categoryFile';
+  final newsUrl = newsEndpoint(categoryFile);
 
   NewsResponse? cached;
   // Try to read cache first
