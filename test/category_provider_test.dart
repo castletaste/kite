@@ -1,18 +1,25 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
-import 'package:kite/providers/http_client_provider.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:kite/models/category.dart';
+import 'package:kite/providers/api_client_provider.dart';
 import 'package:kite/providers/category_provider.dart';
+import 'package:kite/services/api_client.dart';
+import 'package:kite/services/storage.dart';
 
 class _MockHttpClient extends Mock implements http.Client {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   SharedPreferences.setMockInitialValues({});
+  setUpAll(() async {
+    registerFallbackValue(Uri());
+    registerFallbackValue(<String, String>{});
+    await Storage.init();
+  });
 
   const url = 'https://kite.kagi.com/kite.json';
   late _MockHttpClient mockClient;
@@ -40,7 +47,9 @@ void main() {
     ).thenAnswer((_) async => http.Response(sampleJson, 200));
 
     final container = ProviderContainer(
-      overrides: [httpClientProvider.overrideWithValue(mockClient)],
+      overrides: [
+        apiClientProvider.overrideWithValue(ApiClient(client: mockClient)),
+      ],
     );
 
     final response = await container.read(categoriesProvider.future);
@@ -59,7 +68,9 @@ void main() {
     ).thenAnswer((_) async => http.Response('error', 500));
 
     final container = ProviderContainer(
-      overrides: [httpClientProvider.overrideWithValue(mockClient)],
+      overrides: [
+        apiClientProvider.overrideWithValue(ApiClient(client: mockClient)),
+      ],
     );
 
     expect(container.read(categoriesProvider.future), throwsException);
