@@ -39,7 +39,7 @@ class NewsContentSliver extends ConsumerWidget {
           );
         }
         final sorted =
-            clusters..sort((a, b) => readIds.contains(a.id) ? 1 : -1);
+            [...clusters]..sort((a, b) => readIds.contains(a.id) ? 1 : -1);
         return SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
             final cluster = sorted[index];
