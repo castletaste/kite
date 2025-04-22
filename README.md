@@ -34,9 +34,9 @@ flutter test
 
 <!-- Replace these with actual screenshots in `screenshots/` folder -->
 
-| Feed Screen             | Article Detail Screen  | On This Day Screen     |
+| Feed Screen             |  On This Day Screen  | Article Detail Screen    |
 | ----------------------- | ---------------------- | ---------------------- |
-| ![Feed Screen](screenshots/feed.PNG) | ![Article Detail](screenshots/article_detail.PNG) | ![On This Day](screenshots/on_this_day.PNG) |
+| ![Feed Screen](screenshots/feed.PNG) | ![On This Day](screenshots/on_this_day.PNG) | ![Article Detail](screenshots/article_detail.PNG) |
 
 ## Project Structure
 
