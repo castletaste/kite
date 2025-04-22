@@ -36,7 +36,7 @@ flutter test
 
 | Feed Screen             | Article Detail Screen  | On This Day Screen     |
 | ----------------------- | ---------------------- | ---------------------- |
-| ![Feed Screen](screenshots/feed.png) | ![Article Detail](screenshots/article_detail.png) | ![On This Day](screenshots/on_this_day.png) |
+| ![Feed Screen](screenshots/feed.PNG) | ![Article Detail](screenshots/article_detail.PNG) | ![On This Day](screenshots/on_this_day.PNG) |
 
 ## Project Structure
 
