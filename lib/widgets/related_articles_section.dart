@@ -65,7 +65,7 @@ class _RelatedArticlesSectionState extends State<RelatedArticlesSection>
               widget.domains
                   ?.firstWhereOrNull((d) => d.name == domainName)
                   ?.url;
-                  
+
           return CupertinoListSection.insetGrouped(
             header: GestureDetector(
               onTap: () {

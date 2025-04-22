@@ -201,9 +201,10 @@ class Perspective {
   const Perspective({this.sources, this.text});
 
   factory Perspective.fromJson(Map<String, dynamic> json) => Perspective(
-    sources: (json['sources'] as List<dynamic>?)
-        ?.map((e) => Domain.fromJson(e as Map<String, dynamic>))
-        .toList(),
+    sources:
+        (json['sources'] as List<dynamic>?)
+            ?.map((e) => Domain.fromJson(e as Map<String, dynamic>))
+            .toList(),
     text: _parseStringValue(json['text']),
   );
 
